@@ -1,0 +1,6 @@
+{
+  "name": "Orchid Hotel - Operations Portal",
+  "description": "Sistema integral de gestión hotelera y operaciones (PMS) para Orchid Hotel con Dashboard, Room Rack, Reservas, Habitaciones, Huéspedes, POS, Facturación y Reportes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

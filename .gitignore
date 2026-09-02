@@ -1,0 +1,12 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Información sensible (Variables de Entorno)
+.env
+.env.*
+.env.local
+!.env.example
