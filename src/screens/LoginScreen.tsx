@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserRole, ScreenId } from '../types';
+import { supabase } from '../supabase';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: UserRole, destination?: ScreenId) => void;
@@ -9,6 +10,10 @@ interface LoginScreenProps {
   onCancelElevation?: () => void;
   targetDestination?: ScreenId | null;
 }
+
+// Emails configured in Supabase Auth (must match exactly)
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string;
+const RECEPTIONIST_EMAIL = import.meta.env.VITE_RECEPTIONIST_EMAIL as string;
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
@@ -20,57 +25,55 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
   const [tab, setTab] = useState<'standard' | 'pin'>('standard');
-  const [email, setEmail] = useState(
-    initialRole === 'admin'
-      ? (isElevating ? '' : 'gerencia@orchidhotel.com')
-      : 'reception.desk@orchidhotel.com'
-  );
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [pin, setPin] = useState('');
   const [rememberDevice, setRememberDevice] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (initialRole) {
       setSelectedRole(initialRole);
-      if (initialRole === 'admin') {
-        setEmail(isElevating ? '' : 'gerencia@orchidhotel.com');
-        setPassword('');
-      } else {
-        setEmail('reception.desk@orchidhotel.com');
-        setPassword('reception123');
-      }
+      setEmail('');
+      setPassword('');
+      setPin('');
+      setErrorMessage(null);
     }
   }, [initialRole, isElevating]);
 
   const handleSelectRole = (role: UserRole) => {
     setSelectedRole(role);
+    setEmail('');
+    setPassword('');
+    setPin('');
     setErrorMessage(null);
-    if (role === 'admin') {
-      setEmail('gerencia@orchidhotel.com');
-      setPassword('');
-      setPin('');
-    } else {
-      setEmail('reception.desk@orchidhotel.com');
-      setPassword('reception123');
-      setPin('');
-    }
   };
 
+  // --- REAL Supabase Auth: PIN login ---
   const handlePinClick = (num: string) => {
     setErrorMessage(null);
     if (pin.length < 4) {
       const nextPin = pin + num;
       setPin(nextPin);
       if (nextPin.length === 4) {
-        setTimeout(() => {
-          if (selectedRole === 'admin' && nextPin !== '9999') {
-            setErrorMessage('PIN de Administrador inválido. Use el código 9999 o sus credenciales.');
+        setTimeout(async () => {
+          setIsLoading(true);
+          // Map PIN to the corresponding email, then sign in with a pre-defined PIN password
+          const targetEmail = selectedRole === 'admin' ? ADMIN_EMAIL : RECEPTIONIST_EMAIL;
+          const pinPassword = `PIN-${nextPin}-${selectedRole}`;
+          const { error } = await supabase.auth.signInWithPassword({
+            email: targetEmail,
+            password: pinPassword,
+          });
+          setIsLoading(false);
+          if (error) {
+            setErrorMessage('PIN incorrecto. Intenta nuevamente o usa usuario y contraseña.');
             setPin('');
-            return;
+          } else {
+            onLoginSuccess(selectedRole, targetDestination || undefined);
           }
-          onLoginSuccess(selectedRole, targetDestination || undefined);
         }, 300);
       }
     }
@@ -86,53 +89,52 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setErrorMessage(null);
   };
 
-  const handleStandardSubmit = (e: React.FormEvent) => {
+  // --- REAL Supabase Auth: Standard email/password login ---
+  const handleStandardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setIsLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    if (!cleanEmail) {
-      setErrorMessage('Por favor ingresa el usuario o correo del Administrador.');
+    if (!cleanEmail || !cleanPass) {
+      setErrorMessage('Por favor completa el usuario y la contraseña.');
+      setIsLoading(false);
       return;
     }
 
-    if (!cleanPass) {
-      setErrorMessage('Por favor ingresa la contraseña para autorizar el acceso.');
+    // Verify the entered email matches the selected role
+    const expectedEmail = selectedRole === 'admin' ? ADMIN_EMAIL : RECEPTIONIST_EMAIL;
+    if (cleanEmail !== expectedEmail?.toLowerCase()) {
+      setErrorMessage(
+        selectedRole === 'admin'
+          ? 'El correo ingresado no corresponde al perfil de Administrador.'
+          : 'El correo ingresado no corresponde al perfil de Recepcionista.'
+      );
+      setIsLoading(false);
       return;
     }
 
-    // Validation for admin credentials
-    if (selectedRole === 'admin') {
-      const isAdminEmail =
-        cleanEmail.includes('gerencia') ||
-        cleanEmail.includes('admin') ||
-        cleanEmail.includes('mendoza') ||
-        cleanEmail.includes('@orchidhotel.com');
+    const { error } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password: cleanPass,
+    });
 
-      if (!isAdminEmail) {
-        setErrorMessage(
-          'El usuario ingresado no corresponde al perfil de Gerencia / Administrador.'
-        );
-        return;
-      }
+    setIsLoading(false);
 
-      if (cleanPass.length < 3) {
-        setErrorMessage('La contraseña ingresada es demasiado corta.');
-        return;
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        setErrorMessage('Contraseña incorrecta. Verifica e intenta nuevamente.');
+      } else if (error.message.includes('Email not confirmed')) {
+        setErrorMessage('La cuenta no ha sido confirmada. Revisa tu correo de invitación de Supabase.');
+      } else {
+        setErrorMessage(`Error de autenticación: ${error.message}`);
       }
+      return;
     }
 
     onLoginSuccess(selectedRole, targetDestination || undefined);
-  };
-
-  const fillAdminDemo = () => {
-    setSelectedRole('admin');
-    setTab('standard');
-    setEmail('gerencia@orchidhotel.com');
-    setPassword('admin123');
-    setErrorMessage(null);
   };
 
   return (
@@ -311,34 +313,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  Usuario o Correo ({selectedRole === 'admin' ? 'Administrador' : 'Recepción'})
+                  Correo Electrónico ({selectedRole === 'admin' ? 'Administrador' : 'Recepción'})
                 </label>
-                {selectedRole === 'admin' && (
-                  <button
-                    type="button"
-                    onClick={fillAdminDemo}
-                    className="text-[10px] text-amber-700 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
-                  >
-                    <span>Rellenar Demo Admin</span>
-                    <span className="material-symbols-outlined text-xs">bolt</span>
-                  </button>
-                )}
               </div>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
                   account_circle
                 </span>
                 <input
-                  type="text"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                   placeholder={
                     selectedRole === 'admin'
-                      ? 'gerencia@orchidhotel.com'
-                      : 'reception.desk@orchidhotel.com'
+                      ? 'correo@dominio.com'
+                      : 'correo@dominio.com'
                   }
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:bg-white transition"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:bg-white transition disabled:opacity-60"
                 />
               </div>
             </div>
@@ -359,8 +352,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder={selectedRole === 'admin' ? 'Ingresa la contraseña de admin' : 'Contraseña'}
-                  className="w-full pl-10 pr-10 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:bg-white transition"
+                  disabled={isLoading}
+                  placeholder={selectedRole === 'admin' ? 'Contraseña de Administrador' : 'Contraseña de Recepcionista'}
+                  className="w-full pl-10 pr-10 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:bg-white transition disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -372,12 +366,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   </span>
                 </button>
               </div>
-              {selectedRole === 'admin' && (
-                <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[12px] text-amber-500">info</span>
-                  <span>Demo: usuario <strong className="text-slate-600">gerencia@orchidhotel.com</strong> / clave <strong className="text-slate-600">admin123</strong></span>
-                </p>
-              )}
+
             </div>
 
             <div className="flex items-center justify-between pt-1">
@@ -405,20 +394,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <button
               type="submit"
               id="btn-login-submit"
-              className={`w-full mt-2 font-bold py-3 px-4 rounded-xl text-xs shadow-md transition active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer text-white ${
+              disabled={isLoading}
+              className={`w-full mt-2 font-bold py-3 px-4 rounded-xl text-xs shadow-md transition active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer text-white disabled:opacity-70 disabled:cursor-not-allowed ${
                 selectedRole === 'admin'
                   ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-600/20'
                   : 'bg-[#004ac6] hover:bg-[#2563eb] shadow-blue-600/20'
               }`}
             >
-              <span>
-                {selectedRole === 'admin'
-                  ? (isElevating ? 'Verificar y Activar Modo Administrador' : 'Entrar con Privilegios de Administrador')
-                  : 'Iniciar Turno como Recepcionista'}
-              </span>
-              <span className="material-symbols-outlined text-base">
-                {isElevating ? 'verified_user' : 'login'}
-              </span>
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  <span>Verificando credenciales...</span>
+                </>
+              ) : (
+                <>
+                  <span>
+                    {selectedRole === 'admin'
+                      ? (isElevating ? 'Verificar y Activar Modo Administrador' : 'Entrar con Privilegios de Administrador')
+                      : 'Iniciar Turno como Recepcionista'}
+                  </span>
+                  <span className="material-symbols-outlined text-base">
+                    {isElevating ? 'verified_user' : 'login'}
+                  </span>
+                </>
+              )}
             </button>
           </form>
         )}
@@ -427,7 +429,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         {tab === 'pin' && (
           <div className="flex flex-col items-center">
             <p className="text-xs text-slate-500 mb-2">
-              Código PIN para {selectedRole === 'admin' ? 'Ing. Mendoza (9999)' : 'Sofía Ramírez (1234)'}
+              Código PIN de acceso rápido ({selectedRole === 'admin' ? 'Administrador' : 'Recepcionista'})
             </p>
             {/* PIN indicators */}
             <div className="flex items-center gap-4 mb-5">
@@ -480,6 +482,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </button>
             </div>
 
+            {isLoading && (
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span>Verificando PIN...</span>
+              </div>
+            )}
+
             {onCancelElevation && isElevating && (
               <button
                 type="button"
@@ -489,14 +501,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 ← Cancelar y volver a Recepción
               </button>
             )}
-
-            <button
-              type="button"
-              onClick={() => onLoginSuccess(selectedRole, targetDestination || undefined)}
-              className="text-xs text-[#004ac6] font-bold hover:underline mt-1 cursor-pointer"
-            >
-              Autenticar y entrar directo →
-            </button>
           </div>
         )}
 

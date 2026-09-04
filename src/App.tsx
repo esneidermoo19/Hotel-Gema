@@ -12,6 +12,7 @@ import {
   AuditLogEntry,
   PromoCode,
 } from './types';
+import { supabase } from './supabase';
 import {
   INITIAL_ROOMS,
   INITIAL_RESERVATIONS,
@@ -114,7 +115,8 @@ export default function App() {
     );
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsElevatingPrivileges(false);
     setAuthNotice(null);
     setTargetDestinationAfterLogin(null);
