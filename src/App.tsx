@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScreenId,
   Room,
@@ -59,6 +59,42 @@ export default function App() {
   const [isElevatingPrivileges, setIsElevatingPrivileges] = useState<boolean>(false);
   const [targetDestinationAfterLogin, setTargetDestinationAfterLogin] = useState<ScreenId | null>(null);
   const [loginInitialRole, setLoginInitialRole] = useState<UserRole>('admin');
+  // Session loading guard — while true, show splash to avoid flash of dashboard
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  // On mount: check if there's already an active Supabase session
+  useEffect(() => {
+    const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string;
+
+    // 1. Check existing session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // No session → force login screen
+        setCurrentScreen('login');
+      } else {
+        // Session exists → determine role from email
+        const role: UserRole = session.user.email === ADMIN_EMAIL ? 'admin' : 'receptionist';
+        setCurrentUser(role === 'admin' ? ADMIN_PROFILE : RECEPTIONIST_PROFILE);
+        setCurrentScreen('dashboard');
+      }
+      setIsCheckingSession(false);
+    });
+
+    // 2. Listen for future auth changes (logout, token expiry, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setCurrentScreen('login');
+        setIsElevatingPrivileges(false);
+        setAuthNotice(null);
+      } else {
+        const role: UserRole = session.user.email === ADMIN_EMAIL ? 'admin' : 'receptionist';
+        setCurrentUser(role === 'admin' ? ADMIN_PROFILE : RECEPTIONIST_PROFILE);
+      }
+    });
+
+    // Cleanup listener on unmount
+    return () => subscription.unsubscribe();
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -251,28 +287,45 @@ export default function App() {
     setAuditLogs((prev) => [newEntry, ...prev]);
   };
 
+  // Show branded splash while verifying session — prevents flash of dashboard
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen w-full bg-[#f7f9fb] flex flex-col items-center justify-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#004ac6] to-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <span className="material-symbols-outlined text-3xl">spa</span>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <h1 className="text-xl font-black text-[#191c1e] tracking-tight">
+            HOTEL <span className="text-[#004ac6] font-light">GEMA</span>
+          </h1>
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <svg className="animate-spin h-4 w-4 text-[#004ac6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>Verificando sesión...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If currently in login screen
   if (currentScreen === 'login') {
     return (
       <div className="relative">
-        {/* Floating return badge in case user wants to jump right back */}
-        <div className="absolute top-4 right-4 z-50">
-          <button
-            onClick={() => {
-              if (isElevatingPrivileges) {
-                handleCancelElevation();
-              } else {
-                setCurrentScreen('dashboard');
-              }
-            }}
-            className="px-3 py-1.5 bg-white/90 backdrop-blur-xs hover:bg-white text-[#004ac6] border border-blue-200 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-sm">
-              {isElevatingPrivileges ? 'arrow_back' : 'dashboard'}
-            </span>
-            <span>{isElevatingPrivileges ? 'Volver a Recepción' : 'Ir al Portal (PMS)'}</span>
-          </button>
-        </div>
+        {/* Only show back button when elevating privileges, NOT as a free bypass */}
+        {isElevatingPrivileges && (
+          <div className="absolute top-4 right-4 z-50">
+            <button
+              onClick={handleCancelElevation}
+              className="px-3 py-1.5 bg-white/90 backdrop-blur-xs hover:bg-white text-[#004ac6] border border-blue-200 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <span>Volver a Recepción</span>
+            </button>
+          </div>
+        )}
         <LoginScreen
           initialRole={loginInitialRole}
           authNotice={authNotice}
@@ -284,6 +337,7 @@ export default function App() {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-[#f7f9fb] flex flex-row antialiased text-[#191c1e]">
