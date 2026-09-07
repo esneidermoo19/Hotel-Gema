@@ -24,11 +24,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   targetDestination,
 }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
-  const [tab, setTab] = useState<'standard' | 'pin'>('standard');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [pin, setPin] = useState('');
   const [rememberDevice, setRememberDevice] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +36,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       setSelectedRole(initialRole);
       setEmail('');
       setPassword('');
-      setPin('');
       setErrorMessage(null);
     }
   }, [initialRole, isElevating]);
@@ -47,45 +44,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setSelectedRole(role);
     setEmail('');
     setPassword('');
-    setPin('');
-    setErrorMessage(null);
-  };
-
-  // --- REAL Supabase Auth: PIN login ---
-  const handlePinClick = (num: string) => {
-    setErrorMessage(null);
-    if (pin.length < 4) {
-      const nextPin = pin + num;
-      setPin(nextPin);
-      if (nextPin.length === 4) {
-        setTimeout(async () => {
-          setIsLoading(true);
-          // Map PIN to the corresponding email, then sign in with a pre-defined PIN password
-          const targetEmail = selectedRole === 'admin' ? ADMIN_EMAIL : RECEPTIONIST_EMAIL;
-          const pinPassword = `PIN-${nextPin}-${selectedRole}`;
-          const { error } = await supabase.auth.signInWithPassword({
-            email: targetEmail,
-            password: pinPassword,
-          });
-          setIsLoading(false);
-          if (error) {
-            setErrorMessage('PIN incorrecto. Intenta nuevamente o usa usuario y contraseña.');
-            setPin('');
-          } else {
-            onLoginSuccess(selectedRole, targetDestination || undefined);
-          }
-        }, 300);
-      }
-    }
-  };
-
-  const handleClearPin = () => {
-    setPin('');
-    setErrorMessage(null);
-  };
-
-  const handleDeletePin = () => {
-    setPin(pin.slice(0, -1));
     setErrorMessage(null);
   };
 
@@ -263,39 +221,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         </div>
 
-        {/* Tab Toggle: Standard / Quick PIN */}
-        <div className="flex bg-[#f2f4f6] p-1 rounded-2xl mb-4 border border-slate-200">
-          <button
-            type="button"
-            onClick={() => {
-              setTab('standard');
-              setErrorMessage(null);
-            }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              tab === 'standard'
-                ? 'bg-white text-[#004ac6] shadow-xs font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span className="material-symbols-outlined text-sm">key</span>
-            <span>Usuario y Contraseña</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTab('pin');
-              setErrorMessage(null);
-            }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              tab === 'pin'
-                ? 'bg-white text-[#004ac6] shadow-xs font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span className="material-symbols-outlined text-sm">dialpad</span>
-            <span>PIN Rápido</span>
-          </button>
-        </div>
 
         {/* Error Alert Message */}
         {errorMessage && (
@@ -307,8 +232,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         )}
 
-        {/* Tab 1: Standard Login */}
-        {tab === 'standard' && (
+        {/* Standard Login */}
+        {(
           <form onSubmit={handleStandardSubmit} className="space-y-3.5">
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -423,85 +348,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               )}
             </button>
           </form>
-        )}
-
-        {/* Tab 2: Quick PIN Pad */}
-        {tab === 'pin' && (
-          <div className="flex flex-col items-center">
-            <p className="text-xs text-slate-500 mb-2">
-              Código PIN de acceso rápido ({selectedRole === 'admin' ? 'Administrador' : 'Recepcionista'})
-            </p>
-            {/* PIN indicators */}
-            <div className="flex items-center gap-4 mb-5">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                    pin.length > i
-                      ? selectedRole === 'admin'
-                        ? 'bg-amber-500 scale-110 shadow-sm'
-                        : 'bg-[#004ac6] scale-110 shadow-sm'
-                      : 'bg-slate-200 border border-slate-300'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Keypad */}
-            <div className="grid grid-cols-3 gap-2.5 w-full max-w-[260px] mb-4">
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
-                <button
-                  key={digit}
-                  type="button"
-                  onClick={() => handlePinClick(digit)}
-                  className="w-full py-3.5 rounded-2xl bg-[#f8fafc] hover:bg-blue-50 text-[#191c1e] text-lg font-bold border border-slate-200 hover:border-blue-300 transition active:scale-95 shadow-xs cursor-pointer"
-                >
-                  {digit}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={handleClearPin}
-                className="w-full py-3.5 rounded-2xl bg-[#f8fafc] hover:bg-slate-200 text-xs font-bold text-slate-500 border border-slate-200 transition active:scale-95 cursor-pointer"
-              >
-                C
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePinClick('0')}
-                className="w-full py-3.5 rounded-2xl bg-[#f8fafc] hover:bg-blue-50 text-[#191c1e] text-lg font-bold border border-slate-200 hover:border-blue-300 transition active:scale-95 shadow-xs cursor-pointer"
-              >
-                0
-              </button>
-              <button
-                type="button"
-                onClick={handleDeletePin}
-                className="w-full py-3.5 rounded-2xl bg-[#f8fafc] hover:bg-slate-200 text-slate-600 border border-slate-200 flex items-center justify-center transition active:scale-95 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-lg">backspace</span>
-              </button>
-            </div>
-
-            {isLoading && (
-              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                <span>Verificando PIN...</span>
-              </div>
-            )}
-
-            {onCancelElevation && isElevating && (
-              <button
-                type="button"
-                onClick={onCancelElevation}
-                className="text-xs text-slate-500 hover:text-slate-700 font-semibold mb-2"
-              >
-                ← Cancelar y volver a Recepción
-              </button>
-            )}
-          </div>
         )}
 
         {/* Footer info & server sync */}
