@@ -74,20 +74,76 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
-      password: cleanPass,
-    });
+    // ── Llamada a Supabase Auth ─────────────────────────────────────────────
+    let signInError: Error | null = null;
+    let signInSucceeded = false;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPass,
+      });
+      signInError = error;
+      signInSucceeded = !error;
+    } catch (networkErr) {
+      // Error de red / servidor no disponible
+      signInError = networkErr instanceof Error
+        ? networkErr
+        : new Error('Error de conexión desconocido');
+    }
 
     setIsLoading(false);
 
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setErrorMessage('Contraseña incorrecta. Verifica e intenta nuevamente.');
-      } else if (error.message.includes('Email not confirmed')) {
-        setErrorMessage('La cuenta no ha sido confirmada. Revisa tu correo de invitación de Supabase.');
+    if (!signInSucceeded) {
+      const msg = signInError?.message ?? '';
+      const isAdmin = selectedRole === 'admin';
+
+      // ── Errores específicos de Supabase Auth ────────────────────────────
+      if (
+        msg.includes('Invalid login credentials') ||
+        msg.includes('invalid_credentials') ||
+        msg.includes('Invalid credentials')
+      ) {
+        setErrorMessage(
+          isAdmin
+            ? 'Credenciales de Administrador incorrectas. Verifica el correo y la contraseña de Gerencia.'
+            : 'Credenciales de Recepcionista incorrectas. Verifica tu correo y contraseña de turno.'
+        );
+      } else if (msg.includes('Email not confirmed')) {
+        setErrorMessage(
+          'La cuenta aún no ha sido confirmada. Revisa el correo de invitación enviado por Supabase y haz clic en el enlace de activación.'
+        );
+      } else if (
+        msg.includes('over_email_send_rate_limit') ||
+        msg.includes('rate limit') ||
+        msg.includes('too many requests')
+      ) {
+        setErrorMessage(
+          'Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentarlo nuevamente.'
+        );
+      } else if (
+        msg.includes('User not found') ||
+        msg.includes('user_not_found')
+      ) {
+        setErrorMessage(
+          isAdmin
+            ? 'No existe una cuenta de Administrador con ese correo en el sistema.'
+            : 'No existe una cuenta de Recepcionista con ese correo en el sistema.'
+        );
+      } else if (
+        msg.includes('Network') ||
+        msg.includes('fetch') ||
+        msg.includes('Failed to fetch') ||
+        msg.includes('NetworkError')
+      ) {
+        setErrorMessage(
+          'Sin conexión al servidor. Verifica tu conexión a internet e intenta nuevamente.'
+        );
+      } else if (msg.includes('signup_disabled')) {
+        setErrorMessage('El acceso está temporalmente deshabilitado. Contacta al administrador del sistema.');
       } else {
-        setErrorMessage(`Error de autenticación: ${error.message}`);
+        // Error genérico — mostramos el mensaje original de Supabase en español
+        setErrorMessage(`Error de autenticación: ${msg || 'Error desconocido. Intenta nuevamente.'}`);
       }
       return;
     }
@@ -109,10 +165,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <span className="material-symbols-outlined text-[30px]">spa</span>
           </div>
           <h1 className="text-2xl font-black text-[#191c1e] tracking-tight">
-            ORCHID <span className="text-[#004ac6] font-light">HOTEL</span>
+            HOTEL <span className="text-[#004ac6] font-light">GEMA</span>
           </h1>
           <p className="text-[11px] uppercase tracking-widest text-[#545f73] font-semibold mt-0.5">
-            Operations Portal & Executive PMS
+            Portal Operativo • Sistema PMS
           </p>
         </div>
 
