@@ -43,6 +43,20 @@ validateEnv();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// ── Seguridad de Cabeceras HTTP ───────────────────────────────────────────────
+app.disable('x-powered-by');
+
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (isProd) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // En producción, frontend y API comparten el mismo origen → no hay CORS.
 // Solo se habilita en desarrollo para localhost.

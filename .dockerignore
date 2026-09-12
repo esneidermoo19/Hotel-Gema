@@ -1,0 +1,40 @@
+# ==============================================================================
+# .dockerignore — Hotel Gema PMS
+# Excluye archivos innecesarios y sensibles para acelerar el build y proteger claves
+# ==============================================================================
+
+# Dependencias y logs
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# Archivos de configuración de Docker y builds
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# Variables de entorno y secretos (CRÍTICO DE SEGURIDAD)
+.env
+.env.*
+!.env.example
+
+# Builds y temporales
+dist
+build
+coverage
+.tmp
+
+# Archivos del sistema y editores
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
