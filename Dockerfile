@@ -12,11 +12,18 @@ RUN npm install
 # Copiar el resto del código
 COPY . .
 
-# Las variables de entorno en Vite deben estar presentes en tiempo de build
+# Las variables VITE_* deben estar presentes en tiempo de BUILD (Vite las incrusta en el bundle)
+# En Coolify: configúralas como Build Args en el panel de tu servicio web
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_ADMIN_EMAIL
+ARG VITE_RECEPTIONIST_EMAIL
+ARG VITE_API_URL
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_ADMIN_EMAIL=$VITE_ADMIN_EMAIL
+ENV VITE_RECEPTIONIST_EMAIL=$VITE_RECEPTIONIST_EMAIL
+ENV VITE_API_URL=$VITE_API_URL
 
 # Construir la aplicación para producción
 RUN npm run build

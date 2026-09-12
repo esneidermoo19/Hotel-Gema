@@ -32,11 +32,13 @@ services:
       dockerfile: Dockerfile
       args:
         # Solo las variables VITE_ llegan al build del navegador
+        # VITE_API_URL debe ser la URL PÚBLICA del servicio API en Coolify
+        # Ejemplo: https://api.tuhotel.com  (no http://api:4000, eso solo funciona internamente)
         - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
         - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
         - VITE_ADMIN_EMAIL=${VITE_ADMIN_EMAIL}
         - VITE_RECEPTIONIST_EMAIL=${VITE_RECEPTIONIST_EMAIL}
-        - VITE_API_URL=${VITE_API_URL:-http://api:4000}
+        - VITE_API_URL=${VITE_API_URL}
     restart: unless-stopped
     ports:
       - "80:80"
