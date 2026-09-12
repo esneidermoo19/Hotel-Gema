@@ -18,31 +18,45 @@ ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_ADMIN_EMAIL
 ARG VITE_RECEPTIONIST_EMAIL
-ARG VITE_API_URL
+# VITE_API_URL ya NO es necesario: Nginx hace proxy interno de /api/* -> api:4000
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 ENV VITE_ADMIN_EMAIL=$VITE_ADMIN_EMAIL
 ENV VITE_RECEPTIONIST_EMAIL=$VITE_RECEPTIONIST_EMAIL
-ENV VITE_API_URL=$VITE_API_URL
 
 # Construir la aplicación para producción
 RUN npm run build
 
-# Etapa 2: Servidor web ligero (Nginx) para servir los estáticos
+# Etapa 2: Servidor Nginx — sirve estáticos Y hace proxy del API
 FROM nginx:alpine
 
-# Copiar el build generado en la etapa anterior a la carpeta pública de nginx
+# Copiar el build generado
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Configuración básica de Nginx para aplicaciones de una sola página (SPA)
-RUN echo -e "server {\n\
-    listen 80;\n\
-    location / {\n\
-        root /usr/share/nginx/html;\n\
-        index index.html index.htm;\n\
-        try_files \$uri \$uri/ /index.html;\n\
-    }\n\
-}" > /etc/nginx/conf.d/default.conf
+# Config Nginx:
+#   - Sirve los archivos estáticos del frontend (SPA con fallback a index.html)
+#   - Hace proxy de /api/* hacia el contenedor 'api' en el puerto 4000
+#     (comunicación interna de Docker — nunca pasa por internet)
+RUN echo 'server {
+    listen 80;
+
+    # Proxy del API — reenvía /api/* al servidor Express interno
+    location /api/ {
+        proxy_pass         http://api:4000;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    # Frontend SPA
+    location / {
+        root       /usr/share/nginx/html;
+        index      index.html index.htm;
+        try_files  $uri $uri/ /index.html;
+    }
+}' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

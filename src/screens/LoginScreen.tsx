@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { UserRole, ScreenId } from '../types';
 import { supabase } from '../supabase';
 
-// Backend API URL — falls back to localhost in development
-const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:4000';
+// URL relativa: Nginx intercepta /api/* y hace proxy al servidor Express (api:4000)
+// No se necesita VITE_API_URL — funciona igual en local y en producción (Coolify)
+const API_URL = (import.meta.env.VITE_API_URL as string) || '';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: UserRole, destination?: ScreenId) => void;
@@ -156,7 +157,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         errMsg.includes('fetch')
       ) {
         setErrorMessage(
-          `Sin conexión al servidor API (${API_URL}). Asegúrate de que el servidor Express esté corriendo con: npm run server:dev`
+          'Sin conexión al servidor API. En local: ejecuta npm run server:dev. En producción: verifica que el servicio API esté activo en Coolify.'
         );
       } else {
         setErrorMessage('Error de conexión desconocido. Intenta nuevamente.');
