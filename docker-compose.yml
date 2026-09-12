@@ -1,18 +1,47 @@
 version: '3.8'
 
 services:
+
+  # ── Servidor API Express (service_role key — NUNCA expuesta al browser) ───────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_ADMIN_EMAIL=${VITE_ADMIN_EMAIL}
+      - VITE_RECEPTIONIST_EMAIL=${VITE_RECEPTIONIST_EMAIL}
+      - APP_URL=${APP_URL}
+      # ⚠️  La service_role key solo se pasa al contenedor del API, nunca al frontend
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Frontend Vite → estáticos servidos por Nginx ─────────────────────────────
   web:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        # Pasamos las variables de entorno para que Vite pueda hacer el build con ellas
+        # Solo las variables VITE_ llegan al build del navegador
         - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
         - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+        - VITE_ADMIN_EMAIL=${VITE_ADMIN_EMAIL}
+        - VITE_RECEPTIONIST_EMAIL=${VITE_RECEPTIONIST_EMAIL}
+        - VITE_API_URL=${VITE_API_URL:-http://api:4000}
     restart: unless-stopped
     ports:
       - "80:80"
-    # Opcional: Define las variables de entorno en el contenedor (Nginx no las necesita realmente pero es buena práctica)
     environment:
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    depends_on:
+      - api
