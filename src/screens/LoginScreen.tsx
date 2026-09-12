@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { UserRole, ScreenId } from '../types';
 import { supabase } from '../supabase';
 
+// Backend API URL — falls back to localhost in development
+const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:4000';
+
 interface LoginScreenProps {
   onLoginSuccess: (role: UserRole, destination?: ScreenId) => void;
   initialRole?: UserRole;
@@ -47,7 +50,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setErrorMessage(null);
   };
 
-  // --- REAL Supabase Auth: Standard email/password login ---
+  // --- Login via Express API (server-side Supabase auth — no secret keys in browser) ---
   const handleStandardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -62,7 +65,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // Verify the entered email matches the selected role
+    // Verify the entered email matches the selected role (client-side pre-check)
     const expectedEmail = selectedRole === 'admin' ? ADMIN_EMAIL : RECEPTIONIST_EMAIL;
     if (cleanEmail !== expectedEmail?.toLowerCase()) {
       setErrorMessage(
@@ -74,81 +77,91 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // ── Llamada a Supabase Auth ─────────────────────────────────────────────
-    let signInError: Error | null = null;
-    let signInSucceeded = false;
-
+    // ── Llamada al backend Express (/api/auth/login) ────────────────────────
+    // La autenticación real ocurre en el servidor — nunca exponemos la service_role
+    // key en el navegador. El servidor retorna los tokens JWT que usamos para
+    // inicializar la sesión local del cliente Supabase.
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: cleanPass,
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: cleanPass,
+          role: selectedRole,
+        }),
       });
-      signInError = error;
-      signInSucceeded = !error;
-    } catch (networkErr) {
-      // Error de red / servidor no disponible
-      signInError = networkErr instanceof Error
-        ? networkErr
-        : new Error('Error de conexión desconocido');
-    }
 
-    setIsLoading(false);
+      const payload = await response.json();
 
-    if (!signInSucceeded) {
-      const msg = signInError?.message ?? '';
-      const isAdmin = selectedRole === 'admin';
+      if (!response.ok) {
+        // The server returns a localised error message in payload.error
+        const serverMsg: string = payload?.error ?? '';
+        const isAdmin = selectedRole === 'admin';
 
-      // ── Errores específicos de Supabase Auth ────────────────────────────
-      if (
-        msg.includes('Invalid login credentials') ||
-        msg.includes('invalid_credentials') ||
-        msg.includes('Invalid credentials')
-      ) {
-        setErrorMessage(
-          isAdmin
-            ? 'Credenciales de Administrador incorrectas. Verifica el correo y la contraseña de Gerencia.'
-            : 'Credenciales de Recepcionista incorrectas. Verifica tu correo y contraseña de turno.'
-        );
-      } else if (msg.includes('Email not confirmed')) {
-        setErrorMessage(
-          'La cuenta aún no ha sido confirmada. Revisa el correo de invitación enviado por Supabase y haz clic en el enlace de activación.'
-        );
-      } else if (
-        msg.includes('over_email_send_rate_limit') ||
-        msg.includes('rate limit') ||
-        msg.includes('too many requests')
-      ) {
-        setErrorMessage(
-          'Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentarlo nuevamente.'
-        );
-      } else if (
-        msg.includes('User not found') ||
-        msg.includes('user_not_found')
-      ) {
-        setErrorMessage(
-          isAdmin
-            ? 'No existe una cuenta de Administrador con ese correo en el sistema.'
-            : 'No existe una cuenta de Recepcionista con ese correo en el sistema.'
-        );
-      } else if (
-        msg.includes('Network') ||
-        msg.includes('fetch') ||
-        msg.includes('Failed to fetch') ||
-        msg.includes('NetworkError')
-      ) {
-        setErrorMessage(
-          'Sin conexión al servidor. Verifica tu conexión a internet e intenta nuevamente.'
-        );
-      } else if (msg.includes('signup_disabled')) {
-        setErrorMessage('El acceso está temporalmente deshabilitado. Contacta al administrador del sistema.');
-      } else {
-        // Error genérico — mostramos el mensaje original de Supabase en español
-        setErrorMessage(`Error de autenticación: ${msg || 'Error desconocido. Intenta nuevamente.'}`);
+        if (response.status === 429) {
+          setErrorMessage(
+            'Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentarlo nuevamente.'
+          );
+        } else if (response.status === 403) {
+          setErrorMessage(
+            isAdmin
+              ? 'El correo ingresado no corresponde al perfil de Administrador.'
+              : 'El correo ingresado no corresponde al perfil de Recepcionista.'
+          );
+        } else if (serverMsg.includes('Email not confirmed') || serverMsg.includes('confirmada')) {
+          setErrorMessage(
+            'La cuenta aún no ha sido confirmada. Revisa el correo de invitación enviado por Supabase y haz clic en el enlace de activación.'
+          );
+        } else if (
+          serverMsg.includes('incorrecta') ||
+          serverMsg.includes('Invalid') ||
+          serverMsg.includes('invalid_credentials') ||
+          response.status === 401
+        ) {
+          setErrorMessage(
+            isAdmin
+              ? 'Credenciales de Administrador incorrectas. Verifica el correo y la contraseña de Gerencia.'
+              : 'Credenciales de Recepcionista incorrectas. Verifica tu correo y contraseña de turno.'
+          );
+        } else {
+          setErrorMessage(serverMsg || 'Error de autenticación. Intenta nuevamente.');
+        }
+        setIsLoading(false);
+        return;
       }
-      return;
-    }
 
-    onLoginSuccess(selectedRole, targetDestination || undefined);
+      // ── Éxito: hidratamos la sesión en el cliente Supabase ──────────────
+      // Esto permite que supabase.auth.getSession() funcione normalmente
+      // y que onAuthStateChange dispare el evento SIGNED_IN.
+      const { access_token, refresh_token } = payload as {
+        access_token: string;
+        refresh_token: string;
+      };
+
+      if (access_token && refresh_token) {
+        await supabase.auth.setSession({ access_token, refresh_token });
+      }
+
+      setIsLoading(false);
+      onLoginSuccess(selectedRole, targetDestination || undefined);
+
+    } catch (networkErr) {
+      // El servidor Express no está disponible (CORS, red, etc.)
+      setIsLoading(false);
+      const errMsg = networkErr instanceof Error ? networkErr.message : '';
+      if (
+        errMsg.includes('Failed to fetch') ||
+        errMsg.includes('NetworkError') ||
+        errMsg.includes('fetch')
+      ) {
+        setErrorMessage(
+          `Sin conexión al servidor API (${API_URL}). Asegúrate de que el servidor Express esté corriendo con: npm run server:dev`
+        );
+      } else {
+        setErrorMessage('Error de conexión desconocido. Intenta nuevamente.');
+      }
+    }
   };
 
   return (
