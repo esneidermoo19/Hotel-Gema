@@ -93,7 +93,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         }),
       });
 
-      const payload = await response.json();
+      let payload: any = {};
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        payload = await response.json().catch(() => ({}));
+      } else {
+        const textResponse = await response.text().catch(() => '');
+        console.error('Respuesta no-JSON del servidor:', response.status, textResponse);
+        setErrorMessage(
+          `Error en el servidor (HTTP ${response.status}). Verifica el despliegue y los logs en Coolify.`
+        );
+        setIsLoading(false);
+        return;
+      }
 
       if (!response.ok) {
         // The server returns a localised error message in payload.error
@@ -126,7 +138,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               : 'Credenciales de Recepcionista incorrectas. Verifica tu correo y contraseña de turno.'
           );
         } else {
-          setErrorMessage(serverMsg || 'Error de autenticación. Intenta nuevamente.');
+          setErrorMessage(serverMsg || `Error de autenticación (HTTP ${response.status}). Intenta nuevamente.`);
         }
         setIsLoading(false);
         return;
@@ -148,7 +160,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       onLoginSuccess(selectedRole, targetDestination || undefined);
 
     } catch (networkErr) {
-      // El servidor Express no está disponible (CORS, red, etc.)
       setIsLoading(false);
       const errMsg = networkErr instanceof Error ? networkErr.message : '';
       if (
@@ -157,10 +168,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         errMsg.includes('fetch')
       ) {
         setErrorMessage(
-          'Sin conexión al servidor API. En local: ejecuta npm run server:dev. En producción: verifica que el servicio API esté activo en Coolify.'
+          'Sin conexión al servidor. Asegúrate de que el despliegue en Coolify esté activo y finalizado.'
         );
       } else {
-        setErrorMessage('Error de conexión desconocido. Intenta nuevamente.');
+        setErrorMessage(`Error de red o conexión: ${errMsg || 'Desconocido'}`);
       }
     }
   };
