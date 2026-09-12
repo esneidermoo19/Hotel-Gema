@@ -1,63 +1,57 @@
-# Etapa 1: Build de la aplicación
+# ═══════════════════════════════════════════════════════════════
+# Dockerfile — Hotel Gema PMS (contenedor único para Coolify)
+#
+# Etapa 1: Build del frontend con Vite
+# Etapa 2: Servidor Node.js que sirve el API Y el frontend
+#
+# Un solo servicio en Coolify. Express maneja:
+#   - GET  /*         → archivos estáticos del build (dist/)
+#   - POST /api/*     → lógica del servidor con service_role key
+# ═══════════════════════════════════════════════════════════════
+
+# ── Etapa 1: Build del frontend (Vite) ──────────────────────────
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
 COPY package.json package-lock.json* ./
-
-# Instalar dependencias
 RUN npm install
 
-# Copiar el resto del código
 COPY . .
 
-# Las variables VITE_* deben estar presentes en tiempo de BUILD (Vite las incrusta en el bundle)
-# En Coolify: configúralas como Build Args en el panel de tu servicio web
+# Variables VITE_* se hornean en el bundle en tiempo de BUILD.
+# Configúralas como Build Args en Coolify antes de hacer deploy.
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_ADMIN_EMAIL
 ARG VITE_RECEPTIONIST_EMAIL
-# VITE_API_URL ya NO es necesario: Nginx hace proxy interno de /api/* -> api:4000
+# VITE_API_URL no es necesario: el frontend usa URL relativa /api/*
+# y Express (mismo proceso) lo resuelve directamente.
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 ENV VITE_ADMIN_EMAIL=$VITE_ADMIN_EMAIL
 ENV VITE_RECEPTIONIST_EMAIL=$VITE_RECEPTIONIST_EMAIL
 
-# Construir la aplicación para producción
 RUN npm run build
 
-# Etapa 2: Servidor Nginx — sirve estáticos Y hace proxy del API
-FROM nginx:alpine
+# ── Etapa 2: Servidor Express (API + frontend estático) ──────────
+FROM node:20-alpine
 
-# Copiar el build generado
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Config Nginx:
-#   - Sirve los archivos estáticos del frontend (SPA con fallback a index.html)
-#   - Hace proxy de /api/* hacia el contenedor 'api' en el puerto 4000
-#     (comunicación interna de Docker — nunca pasa por internet)
-RUN echo 'server {
-    listen 80;
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev && npm install tsx
 
-    # Proxy del API — reenvía /api/* al servidor Express interno
-    location /api/ {
-        proxy_pass         http://api:4000;
-        proxy_http_version 1.1;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
+# Código del servidor
+COPY server/ ./server/
+COPY tsconfig.json ./
 
-    # Frontend SPA
-    location / {
-        root       /usr/share/nginx/html;
-        index      index.html index.htm;
-        try_files  $uri $uri/ /index.html;
-    }
-}' > /etc/nginx/conf.d/default.conf
+# Build del frontend generado en la etapa anterior
+COPY --from=builder /app/dist ./dist
 
-EXPOSE 80
+EXPOSE 4000
 
-CMD ["nginx", "-g", "daemon off;"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:4000/api/health || exit 1
+
+CMD ["npx", "tsx", "server/index.ts"]
