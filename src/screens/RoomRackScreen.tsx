@@ -12,7 +12,7 @@ interface RackBooking {
   code: string;
   roomNumber: string;
   guestName: string;
-  startDayIndex: number; // 0 to 7
+  startDayIndex: number;
   durationDays: number;
   status: 'In-House' | 'Confirmada' | 'Hold' | 'Mantenimiento';
   color: string;
@@ -147,7 +147,7 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Toolbar */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-slate-100 p-1 rounded-xl">
@@ -171,7 +171,6 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
             </button>
           </div>
 
-          {/* Date Selector */}
           <div className="flex items-center gap-2 border border-slate-200 px-3 py-1.5 rounded-xl bg-slate-50 text-xs font-semibold text-slate-700">
             <button className="hover:text-blue-600 p-0.5">
               <span className="material-symbols-outlined text-sm">chevron_left</span>
@@ -183,7 +182,6 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
           </div>
         </div>
 
-        {/* Floor Filter & New Booking */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs">
             <span className="text-slate-500 font-medium">Piso:</span>
@@ -212,12 +210,11 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
         </div>
       </div>
 
-      {/* Timeline Rack Table */}
       {viewMode === 'timeline' ? (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[950px]">
-              {/* Table Header: Days of the week */}
+
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-xs text-slate-600">
                   <th className="w-56 p-4 text-left font-bold text-slate-800 sticky left-0 bg-slate-50/95 z-10 border-r border-slate-200">
@@ -245,14 +242,13 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
                 </tr>
               </thead>
 
-              {/* Table Body: Rooms & Booking Gantt Bars */}
               <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredRooms.map((room) => {
                   const roomBookings = bookings.filter((b) => b.roomNumber === room.number);
 
                   return (
                     <tr key={room.id} className="h-16 hover:bg-slate-50/50 transition">
-                      {/* Room Column */}
+
                       <td className="p-3 sticky left-0 bg-white z-10 border-r border-slate-200">
                         <div className="flex items-center justify-between">
                           <div>
@@ -277,10 +273,9 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
                         </div>
                       </td>
 
-                      {/* 8 Day Slots (relative container for Gantt bars) */}
                       <td colSpan={8} className="p-0 relative">
                         <div className="grid grid-cols-8 h-16 relative">
-                          {/* Grid Column lines */}
+
                           {days.map((d, colIdx) => (
                             <div
                               key={colIdx}
@@ -290,7 +285,6 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
                             />
                           ))}
 
-                          {/* Render Bookings on this Room */}
                           {roomBookings.map((b) => {
                             const leftPercent = (b.startDayIndex / 8) * 100;
                             const widthPercent = (b.durationDays / 8) * 100;
@@ -325,7 +319,7 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
           </div>
         </div>
       ) : (
-        /* List View */
+
         <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
@@ -367,7 +361,6 @@ export const RoomRackScreen: React.FC<RoomRackScreenProps> = ({
         </div>
       )}
 
-      {/* Booking Detail Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">

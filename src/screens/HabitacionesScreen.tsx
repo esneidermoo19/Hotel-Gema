@@ -26,7 +26,7 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Estado de Habitaciones y Housekeeping</h1>
@@ -43,7 +43,6 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
         </div>
       </div>
 
-      {/* KPI Stats Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Habitaciones</span>
@@ -84,9 +83,8 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
         </div>
       </div>
 
-      {/* Filter Tabs */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
-        {/* Floor Filter */}
+
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-500 font-semibold">Piso:</span>
           <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -104,7 +102,6 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
           </div>
         </div>
 
-        {/* Status Filter */}
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-500 font-semibold">Estado:</span>
           <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -144,7 +141,6 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
         </div>
       </div>
 
-      {/* Room Grid Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredRooms.map((room) => {
           const isClean = room.status === 'limpia';
@@ -156,7 +152,7 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
               key={room.id}
               className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col justify-between hover:shadow-md transition group"
             >
-              {/* Room Image & Badge */}
+
               <div className="relative h-36 w-full overflow-hidden bg-slate-100">
                 {room.image ? (
                   <img
@@ -169,12 +165,11 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
                     <span className="material-symbols-outlined text-4xl">bed</span>
                   </div>
                 )}
-                {/* Room Number pill */}
+
                 <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-xs font-black px-2.5 py-1 rounded-xl shadow-md">
                   Hab {room.number}
                 </div>
 
-                {/* Status Badge */}
                 <div className="absolute top-3 right-3">
                   {isClean && (
                     <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
@@ -197,7 +192,6 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
                 </div>
               </div>
 
-              {/* Room Details */}
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex items-baseline justify-between mb-1">
@@ -211,7 +205,6 @@ export const HabitacionesScreen: React.FC<HabitacionesScreenProps> = ({
                   </p>
                 </div>
 
-                {/* Status Toggle Action Buttons */}
                 <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-1.5">
                   <button
                     onClick={() => onUpdateRoomStatus(room.id, 'limpia')}

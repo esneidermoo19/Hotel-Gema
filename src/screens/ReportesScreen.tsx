@@ -32,7 +32,7 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Reportes Ejecutivos & Indicadores KPI</h1>
@@ -52,7 +52,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">RevPAR Global</span>
@@ -104,9 +103,8 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
         </div>
       </div>
 
-      {/* Main Row: Monthly Chart & Channel Mix */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Occupancy vs Revenue Bar Chart (2 cols) */}
+
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
             <div>
@@ -125,7 +123,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
             </div>
           </div>
 
-          {/* Interactive Chart Bars */}
           <div className="pt-8 pb-4">
             <div className="h-60 flex items-end justify-between gap-2 px-1">
               {monthlyMetrics.map((item) => {
@@ -137,7 +134,7 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
                     onMouseEnter={() => setActiveMonthHover(item.month)}
                     onMouseLeave={() => setActiveMonthHover(null)}
                   >
-                    {/* Tooltip */}
+
                     <div
                       className={`transition-all duration-200 mb-2 ${
                         isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
@@ -149,14 +146,13 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
                       </div>
                     </div>
 
-                    {/* Dual Bars Side-by-side */}
                     <div className="w-full flex items-end justify-center gap-1 h-full pb-1">
-                      {/* Bar 1: Occ */}
+
                       <div
                         className="w-2.5 sm:w-3.5 bg-gradient-to-t from-[#004ac6] to-blue-500 rounded-t-md transition-all group-hover:brightness-110"
                         style={{ height: `${item.occ}%` }}
                       />
-                      {/* Bar 2: Rev */}
+
                       <div
                         className="w-2.5 sm:w-3.5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-md transition-all group-hover:brightness-110"
                         style={{ height: `${(item.rev / 70) * 100}%` }}
@@ -182,7 +178,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
           </div>
         </div>
 
-        {/* Channel Mix Donut Card (1 col) */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="pb-4 border-b border-slate-100">
@@ -190,11 +185,10 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
               <p className="text-xs text-slate-500">Distribución de reservas por origen</p>
             </div>
 
-            {/* SVG Donut */}
             <div className="flex items-center justify-center my-6 relative">
               <svg width="150" height="150" viewBox="0 0 42 42" className="rotate-[-90deg]">
                 <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
-                {/* Web Directa 40% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -205,7 +199,7 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
                   strokeDasharray="40 60"
                   strokeDashoffset="0"
                 />
-                {/* Booking.com 35% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -216,7 +210,7 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
                   strokeDasharray="35 65"
                   strokeDashoffset="-40"
                 />
-                {/* Corporativo 15% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -227,7 +221,7 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
                   strokeDasharray="15 85"
                   strokeDashoffset="-75"
                 />
-                {/* Otros 10% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -245,7 +239,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
               </div>
             </div>
 
-            {/* Legend */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-slate-600 flex items-center gap-1.5">
@@ -284,9 +277,8 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
         </div>
       </div>
 
-      {/* Bottom Row: Top Rooms by RevPAR & 52-Week Heatmap */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Rooms Table */}
+
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
           <div className="pb-4 border-b border-slate-100">
             <h3 className="text-base font-bold text-slate-900">Top Habitaciones por RevPAR</h3>
@@ -315,7 +307,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
           </div>
         </div>
 
-        {/* 52-Week Year-to-Date Occupancy Heatmap */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
@@ -328,10 +319,9 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
               </span>
             </div>
 
-            {/* Heatmap Grid */}
             <div className="my-5 grid grid-cols-13 gap-1.5">
               {Array.from({ length: 52 }).map((_, idx) => {
-                // Simulating realistic occupancy variation across year
+
                 const intensity = (idx * 7 + 13) % 100;
                 let colorClass = 'bg-slate-100';
                 if (intensity > 85) colorClass = 'bg-[#004ac6]';
@@ -350,7 +340,6 @@ export const ReportesScreen: React.FC<ReportesScreenProps> = () => {
             </div>
           </div>
 
-          {/* Scale Legend */}
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Baja (&lt;50%)</span>
             <div className="flex items-center gap-1">

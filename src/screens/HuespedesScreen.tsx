@@ -46,7 +46,7 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Directorio de Huéspedes</h1>
@@ -61,7 +61,6 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
         </button>
       </div>
 
-      {/* Filter Card */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
@@ -93,7 +92,6 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
         </div>
       </div>
 
-      {/* Guests Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {filteredGuests.map((guest) => (
           <div
@@ -101,7 +99,7 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
             className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 flex flex-col justify-between hover:shadow-md transition"
           >
             <div>
-              {/* Avatar & Badge */}
+
               <div className="flex items-start justify-between mb-3">
                 <div className="relative">
                   {guest.photo ? (
@@ -127,7 +125,6 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
                 </span>
               </div>
 
-              {/* Info */}
               <h3 className="text-sm font-bold text-slate-900 leading-snug">{guest.name}</h3>
               <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                 <span className="material-symbols-outlined text-xs text-slate-400">public</span>
@@ -146,7 +143,6 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
               </div>
             </div>
 
-            {/* Profile Action Button */}
             <div className="mt-4 pt-3 border-t border-slate-100">
               <button
                 onClick={() => setSelectedGuest(guest)}
@@ -160,7 +156,6 @@ export const HuespedesScreen: React.FC<HuespedesScreenProps> = ({
         ))}
       </div>
 
-      {/* Guest Detail Dossier Modal */}
       {selectedGuest && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">

@@ -23,7 +23,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRes, setSelectedRes] = useState<Reservation | null>(null);
 
-
   const filteredReservations = reservations.filter((res) => {
     if (statusFilter !== 'Todas' && res.status !== statusFilter) return false;
     if (originFilter !== 'Todos' && res.origin !== originFilter) return false;
@@ -63,7 +62,7 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header & Actions */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -93,11 +92,10 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
         </div>
       </div>
 
-      {/* Filter Card */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
-        {/* Row 1: Search & Status Pills */}
+
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Search Box */}
+
           <div className="relative w-full lg:w-80">
             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
               search
@@ -111,7 +109,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
             />
           </div>
 
-          {/* Status Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
             {(['Todas', 'In-House', 'Confirmada', 'Pendiente', 'Cancelada'] as const).map((st) => (
               <button
@@ -136,7 +133,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Origin Filters & Reset */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
           <div className="flex items-center gap-2">
             <span className="text-slate-500 font-medium">Canal de origen:</span>
@@ -173,7 +169,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
         </div>
       </div>
 
-      {/* Reservations Table */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left border-collapse">
@@ -252,7 +247,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
         </div>
       </div>
 
-      {/* Reservation Management Modal */}
       {selectedRes && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -308,7 +302,6 @@ export const ReservasScreen: React.FC<ReservasScreenProps> = ({
                 </div>
               </div>
 
-              {/* Admin Superpower: Rate Override & Courtesy Discounts */}
               <div className="pt-2 border-t border-slate-100">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">

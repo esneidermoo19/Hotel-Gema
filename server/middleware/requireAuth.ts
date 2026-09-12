@@ -1,29 +1,7 @@
-/**
- * server/middleware/requireAuth.ts
- * ─────────────────────────────────────────────────────────────────────────────
- * Middleware que protege rutas verificando el JWT de Supabase Auth.
- *
- * El cliente (navegador) debe enviar en cada request protegido:
- *   Authorization: Bearer <access_token>
- *
- * Este middleware:
- *   1. Extrae el Bearer token del header Authorization
- *   2. Lo verifica con supabaseAdmin.auth.getUser(token) — server-side
- *   3. Si es válido, adjunta `req.supabaseUser` para uso en los handlers
- *   4. Si no es válido o falta, responde 401
- *
- * FLUJO:
- *   Frontend → obtiene access_token de supabase.auth.getSession()
- *   Frontend → lo envía en Authorization: Bearer <token>
- *   Servidor → verifica el JWT con Supabase (firma, expiración, revocación)
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 import type { Request, Response, NextFunction } from 'express';
 import type { User } from '@supabase/supabase-js';
 import { supabaseAdmin } from '../supabaseAdmin';
 
-// Extiende el tipo de Request para incluir el usuario verificado
 declare global {
   namespace Express {
     interface Request {
@@ -32,10 +10,6 @@ declare global {
   }
 }
 
-/**
- * Middleware: requiere JWT válido de Supabase Auth.
- * Protege cualquier ruta en la que se monte.
- */
 export async function requireAuth(
   req: Request,
   res: Response,
@@ -58,7 +32,6 @@ export async function requireAuth(
     return;
   }
 
-  // Verificar el token con Supabase (valida firma + expiración + revocación)
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
   if (error || !user) {
@@ -73,19 +46,10 @@ export async function requireAuth(
     return;
   }
 
-  // Adjuntar el usuario verificado al request para uso en los handlers
   req.supabaseUser = user;
   next();
 }
 
-/**
- * Middleware: requiere que el usuario autenticado sea Administrador.
- * Debe usarse DESPUÉS de requireAuth.
- *
- * La detección de rol se hace comparando el email con VITE_ADMIN_EMAIL.
- * En un sistema más avanzado, usar `user.app_metadata.role` configurado
- * desde el panel de Supabase o mediante esta misma API.
- */
 export function requireAdmin(
   req: Request,
   res: Response,
@@ -99,7 +63,6 @@ export function requireAdmin(
     return;
   }
 
-  // Verificar por app_metadata.role (preferido) o por email como fallback
   const roleFromMetadata = user.app_metadata?.role;
   const isAdminByMetadata = roleFromMetadata === 'admin';
   const isAdminByEmail = adminEmail && user.email === adminEmail;

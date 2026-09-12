@@ -12,7 +12,7 @@ import {
   AuditLogEntry,
   PromoCode,
 } from './types';
-import { supabase } from './supabase';
+import { supabase } from './lib/supabase';
 import {
   INITIAL_ROOMS,
   INITIAL_RESERVATIONS,
@@ -54,25 +54,22 @@ export default function App() {
   const [promos, setPromos] = useState<PromoCode[]>(INITIAL_PROMOS);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Security elevation state
   const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [isElevatingPrivileges, setIsElevatingPrivileges] = useState<boolean>(false);
   const [targetDestinationAfterLogin, setTargetDestinationAfterLogin] = useState<ScreenId | null>(null);
   const [loginInitialRole, setLoginInitialRole] = useState<UserRole>('admin');
-  // Session loading guard — while true, show splash to avoid flash of dashboard
+
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  // On mount: check if there's already an active Supabase session
   useEffect(() => {
     const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string;
 
-    // 1. Check existing session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        // No session → force login screen
+
         setCurrentScreen('login');
       } else {
-        // Session exists → determine role from email
+
         const role: UserRole = session.user.email === ADMIN_EMAIL ? 'admin' : 'receptionist';
         setCurrentUser(role === 'admin' ? ADMIN_PROFILE : RECEPTIONIST_PROFILE);
         setCurrentScreen('dashboard');
@@ -80,7 +77,6 @@ export default function App() {
       setIsCheckingSession(false);
     });
 
-    // 2. Listen for future auth changes (logout, token expiry, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         setCurrentScreen('login');
@@ -92,7 +88,6 @@ export default function App() {
       }
     });
 
-    // Cleanup listener on unmount
     return () => subscription.unsubscribe();
   }, []);
 
@@ -103,7 +98,6 @@ export default function App() {
     }, 4000);
   };
 
-  // Request admin elevation with username and password
   const handleRequestAdminAccess = (destination: ScreenId = 'dashboard') => {
     setAuthNotice(
       'Has solicitado activar el Modo Administrador desde la sesión de Recepción. Por seguridad, ingresa el usuario y contraseña del Administrador.'
@@ -115,14 +109,13 @@ export default function App() {
     showToast('Ingresa usuario y contraseña de Administrador para continuar.');
   };
 
-  // Role switching
   const handleToggleRole = () => {
     if (currentUser.role === 'admin') {
-      // Switching from Admin to Receptionist does not require credentials
+
       setCurrentUser(RECEPTIONIST_PROFILE);
       showToast('Cambiado a Modo Recepcionista (Sofía Ramírez • Turno Mañana)');
     } else {
-      // Switching from Receptionist to Admin MUST redirect to Login for credentials!
+
       handleRequestAdminAccess('dashboard');
     }
   };
@@ -168,7 +161,6 @@ export default function App() {
     }
   };
 
-  // Task actions
   const handleToggleTask = (id: string) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
@@ -187,7 +179,6 @@ export default function App() {
     showToast(`Tarea agregada: "${title}"`);
   };
 
-  // Reservation actions
   const handleCompleteReservation = (newRes: Reservation) => {
     setReservations((prev) => [newRes, ...prev]);
     setCurrentScreen('reservas');
@@ -222,7 +213,6 @@ export default function App() {
     showToast(`Descuento de cortesía (${discountPercent}%) aplicado por Gerencia`);
   };
 
-  // Room status actions
   const handleUpdateRoomStatus = (roomId: string, status: Room['status']) => {
     setRooms((prev) =>
       prev.map((r) => (r.id === roomId ? { ...r, status } : r))
@@ -230,7 +220,6 @@ export default function App() {
     showToast(`Habitación ${roomId} marcada como "${status.toUpperCase()}"`);
   };
 
-  // Invoice actions from POS
   const handleAddInvoice = (inv: Invoice) => {
     setInvoices((prev) => [inv, ...prev]);
     showToast(`Comprobante ${inv.folio} generado por $${inv.total.toFixed(2)}`);
@@ -251,7 +240,6 @@ export default function App() {
     showToast('Comprobante anulado formalmente bajo supervisión fiscal.');
   };
 
-  // Admin exclusive handlers
   const handleUpdateRoomRate = (roomId: string, newRate: number) => {
     setRooms((prev) =>
       prev.map((r) => (r.id === roomId ? { ...r, rate: newRate } : r))
@@ -287,7 +275,6 @@ export default function App() {
     setAuditLogs((prev) => [newEntry, ...prev]);
   };
 
-  // Show branded splash while verifying session — prevents flash of dashboard
   if (isCheckingSession) {
     return (
       <div className="min-h-screen w-full bg-[#f7f9fb] flex flex-col items-center justify-center gap-4">
@@ -310,11 +297,10 @@ export default function App() {
     );
   }
 
-  // If currently in login screen
   if (currentScreen === 'login') {
     return (
       <div className="relative">
-        {/* Only show back button when elevating privileges, NOT as a free bypass */}
+
         {isElevatingPrivileges && (
           <div className="absolute top-4 right-4 z-50">
             <button
@@ -338,10 +324,9 @@ export default function App() {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-[#f7f9fb] flex flex-row antialiased text-[#191c1e]">
-      {/* Sidebar Navigation */}
+
       <Sidebar
         currentScreen={currentScreen}
         onNavigate={handleProtectedNavigate}
@@ -352,7 +337,6 @@ export default function App() {
         onRequestAdminAccess={handleRequestAdminAccess}
       />
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         <Header
           currentScreen={currentScreen}
@@ -363,7 +347,6 @@ export default function App() {
           onRequestAdminAccess={handleRequestAdminAccess}
         />
 
-        {/* Global Toast Notification */}
         {toastMessage && (
           <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2 border border-slate-700">
             <span className="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
@@ -371,7 +354,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Active Screen View */}
         <main className="flex-1 overflow-y-auto pb-12">
           {currentScreen === 'dashboard' && (
             <DashboardScreen
@@ -466,4 +448,3 @@ export default function App() {
     </div>
   );
 }
-

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserRole, ScreenId } from '../types';
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 
-// URL relativa: Nginx intercepta /api/* y hace proxy al servidor Express (api:4000)
-// No se necesita VITE_API_URL — funciona igual en local y en producción (Coolify)
 const API_URL = (import.meta.env.VITE_API_URL as string) || '';
 
 interface LoginScreenProps {
@@ -15,7 +13,6 @@ interface LoginScreenProps {
   targetDestination?: ScreenId | null;
 }
 
-// Emails configured in Supabase Auth (must match exactly)
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL as string;
 const RECEPTIONIST_EMAIL = import.meta.env.VITE_RECEPTIONIST_EMAIL as string;
 
@@ -51,7 +48,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setErrorMessage(null);
   };
 
-  // --- Login via Express API (server-side Supabase auth — no secret keys in browser) ---
   const handleStandardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -66,7 +62,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // Verify the entered email matches the selected role (client-side pre-check)
     const expectedEmail = selectedRole === 'admin' ? ADMIN_EMAIL : RECEPTIONIST_EMAIL;
     if (cleanEmail !== expectedEmail?.toLowerCase()) {
       setErrorMessage(
@@ -78,10 +73,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // ── Llamada al backend Express (/api/auth/login) ────────────────────────
-    // La autenticación real ocurre en el servidor — nunca exponemos la service_role
-    // key en el navegador. El servidor retorna los tokens JWT que usamos para
-    // inicializar la sesión local del cliente Supabase.
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
@@ -108,7 +99,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       }
 
       if (!response.ok) {
-        // The server returns a localised error message in payload.error
+
         const serverMsg: string = payload?.error ?? '';
         const isAdmin = selectedRole === 'admin';
 
@@ -144,9 +135,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         return;
       }
 
-      // ── Éxito: hidratamos la sesión en el cliente Supabase ──────────────
-      // Esto permite que supabase.auth.getSession() funcione normalmente
-      // y que onAuthStateChange dispare el evento SIGNED_IN.
       const { access_token, refresh_token } = payload as {
         access_token: string;
         refresh_token: string;
@@ -178,13 +166,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   return (
     <div className="min-h-screen w-full bg-[#f7f9fb] flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      {/* Subtle Background Glows */}
+
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none animate-blob" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none animate-blob animation-delay-2000" />
 
-      {/* Main Login Card */}
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-7 sm:p-8 z-10 transition-all">
-        {/* Header Branding */}
+
         <div className="flex flex-col items-center text-center mb-5">
           <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#004ac6] to-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-blue-600/30 mb-2.5">
             <span className="material-symbols-outlined text-[30px]">spa</span>
@@ -197,7 +184,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </p>
         </div>
 
-        {/* Security Alert Banner when elevating from Reception */}
         {isElevating && (
           <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-amber-100/60 border border-amber-300 shadow-xs animate-in fade-in slide-in-from-top-2">
             <div className="flex items-start gap-3">
@@ -238,13 +224,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         )}
 
-        {/* Role Selection Tabs with Distinct Advantage Previews */}
         <div className="mb-5 space-y-2">
           <p className="text-[11px] uppercase tracking-wider font-extrabold text-slate-400 text-center">
             {isElevating ? 'Rol a Autenticar' : 'Selecciona Perfil de Acceso'}
           </p>
           <div className="grid grid-cols-2 gap-3">
-            {/* Admin Profile Choice */}
+
             <button
               type="button"
               onClick={() => handleSelectRole('admin')}
@@ -272,7 +257,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </span>
             </button>
 
-            {/* Receptionist Profile Choice */}
             <button
               type="button"
               onClick={() => handleSelectRole('receptionist')}
@@ -302,8 +286,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         </div>
 
-
-        {/* Error Alert Message */}
         {errorMessage && (
           <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-xs text-rose-700 animate-in fade-in">
             <span className="material-symbols-outlined text-base text-rose-600 shrink-0">
@@ -313,7 +295,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         )}
 
-        {/* Standard Login */}
         {(
           <form onSubmit={handleStandardSubmit} className="space-y-3.5">
             <div>
@@ -431,7 +412,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </form>
         )}
 
-        {/* Footer info & server sync */}
         <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -443,5 +423,3 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     </div>
   );
 };
-
-

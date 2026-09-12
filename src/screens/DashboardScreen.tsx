@@ -41,7 +41,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Banner / Welcome */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#004ac6] to-[#2563eb] rounded-3xl p-6 text-white shadow-lg shadow-blue-700/15">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -73,9 +73,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: Ocupación */}
+
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ocupación Actual</span>
@@ -98,7 +97,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         </div>
 
-        {/* KPI 2: RevPAR */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">RevPAR</span>
@@ -121,7 +119,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         </div>
 
-        {/* KPI 3: ADR */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">ADR (Tarifa Prom.)</span>
@@ -144,7 +141,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         </div>
 
-        {/* KPI 4: Flujo Diario */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Flujo Diario (Hoy)</span>
@@ -177,9 +173,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
       </div>
 
-      {/* Main Row: Weekly Chart & Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Weekly Occupancy Chart (2 cols) */}
+
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
             <div>
@@ -198,10 +193,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
           </div>
 
-          {/* Interactive Chart Container */}
           <div className="pt-8 pb-4">
             <div className="relative h-56 flex items-end justify-between gap-3 px-2">
-              {/* Target Line at 80% */}
+
               <div
                 className="absolute w-full border-b-2 border-dashed border-emerald-400/80 pointer-events-none z-10"
                 style={{ bottom: '80%' }}
@@ -221,7 +215,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     onMouseEnter={() => setActiveDayHover(item.day)}
                     onMouseLeave={() => setActiveDayHover(null)}
                   >
-                    {/* Tooltip on Hover */}
+
                     <div
                       className={`transition-all duration-200 mb-2 ${
                         isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
@@ -233,7 +227,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       </div>
                     </div>
 
-                    {/* Bar */}
                     <div className="w-full max-w-[48px] bg-slate-100 rounded-xl overflow-hidden flex flex-col justify-end p-1 transition">
                       <div
                         className={`w-full rounded-lg transition-all duration-500 ${
@@ -245,7 +238,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       />
                     </div>
 
-                    {/* Day Label */}
                     <span
                       className={`text-xs font-semibold mt-3 ${
                         isHovered ? 'text-[#004ac6]' : 'text-slate-600'
@@ -268,7 +260,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         </div>
 
-        {/* Tareas Pendientes Card (1 col) */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -287,7 +278,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </button>
             </div>
 
-            {/* Task list */}
             <div className="divide-y divide-slate-100 mt-2 max-h-[310px] overflow-y-auto custom-scrollbar">
               {tasks.map((task) => (
                 <div
@@ -340,7 +330,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
       </div>
 
-      {/* Modal: New Task */}
       {showNewTaskModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">

@@ -1,43 +1,15 @@
-/**
- * server/routes/admin.ts
- * ─────────────────────────────────────────────────────────────────────────────
- * Router de administración de usuarios — requiere privilegios de Administrador.
- *
- * TODOS los endpoints de este router requieren:
- *   1. Token JWT válido (requireAuth)
- *   2. Rol de Administrador / Gerencia (requireAdmin)
- *
- * ENDPOINTS:
- *   GET    /api/admin/users         → Listar todos los usuarios del sistema
- *   POST   /api/admin/users/create  → Crear nuevo usuario (admin o recepcionista)
- *   PATCH  /api/admin/users/:uid    → Actualizar email, password o metadata
- *   DELETE /api/admin/users/:uid    → Eliminar usuario permanentemente
- *
- * Estas operaciones usan supabaseAdmin (service_role) — SOLO disponibles
- * en el servidor. El navegador nunca tiene acceso directo a estos métodos.
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 import { Router, type Request, type Response } from 'express';
 import { supabaseAdmin } from '../supabaseAdmin';
 import { requireAuth, requireAdmin } from '../middleware/requireAuth';
 
 export const adminRouter = Router();
 
-// Aplica ambos middlewares a TODAS las rutas de este router
 adminRouter.use(requireAuth, requireAdmin);
 
-// ── GET /api/admin/users ──────────────────────────────────────────────────────
-/**
- * Lista todos los usuarios registrados en Supabase Auth.
- * Solo accesible por el Administrador.
- *
- * Respuesta: array de usuarios con id, email, role, created_at, last_sign_in_at
- */
 adminRouter.get('/users', async (_req: Request, res: Response): Promise<void> => {
   const { data, error } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
-    perPage: 100, // Ajustar según necesidades
+    perPage: 100,
   });
 
   if (error) {
@@ -47,7 +19,6 @@ adminRouter.get('/users', async (_req: Request, res: Response): Promise<void> =>
 
   const adminEmail = (process.env.VITE_ADMIN_EMAIL ?? '').toLowerCase();
 
-  // Mapear los usuarios a un formato limpio para el frontend
   const users = data.users.map((u) => ({
     id: u.id,
     email: u.email,
@@ -61,22 +32,6 @@ adminRouter.get('/users', async (_req: Request, res: Response): Promise<void> =>
   res.json({ users, total: users.length });
 });
 
-// ── POST /api/admin/users/create ──────────────────────────────────────────────
-/**
- * Crea un nuevo usuario en Supabase Auth.
- * Útil para dar de alta nuevos recepcionistas o administradores.
- *
- * Body:
- *   {
- *     email: string,
- *     password: string,
- *     role: 'admin' | 'receptionist',
- *     name?: string          // Guardado en user_metadata
- *   }
- *
- * La cuenta se crea CONFIRMADA (sin necesidad de verificar email),
- * ya que es creada por un administrador del sistema.
- */
 adminRouter.post('/users/create', async (req: Request, res: Response): Promise<void> => {
   const { email, password, role, name } = req.body as {
     email?: string;
@@ -85,7 +40,6 @@ adminRouter.post('/users/create', async (req: Request, res: Response): Promise<v
     name?: string;
   };
 
-  // ── Validaciones ─────────────────────────────────────────────────────────────
   if (!email || !password) {
     res.status(400).json({ error: 'El correo y la contraseña son obligatorios.' });
     return;
@@ -105,17 +59,16 @@ adminRouter.post('/users/create', async (req: Request, res: Response): Promise<v
     return;
   }
 
-  // ── Crear usuario con service_role (sin email de confirmación) ───────────────
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email: email.trim().toLowerCase(),
     password,
-    email_confirm: true, // El admin crea la cuenta ya confirmada
+    email_confirm: true,
     user_metadata: {
       name: name ?? '',
       role,
     },
     app_metadata: {
-      role, // Guardamos el rol también en app_metadata (más seguro que user_metadata)
+      role,
     },
   });
 
@@ -141,20 +94,6 @@ adminRouter.post('/users/create', async (req: Request, res: Response): Promise<v
   });
 });
 
-// ── PATCH /api/admin/users/:uid ───────────────────────────────────────────────
-/**
- * Actualiza datos de un usuario existente.
- * Permite cambiar email, contraseña o metadatos (nombre, rol).
- *
- * Params: uid → ID del usuario en Supabase Auth
- * Body:
- *   {
- *     email?: string,
- *     password?: string,
- *     name?: string,
- *     role?: 'admin' | 'receptionist'
- *   }
- */
 adminRouter.patch('/users/:uid', async (req: Request, res: Response): Promise<void> => {
   const { uid } = req.params;
   const { email, password, name, role } = req.body as {
@@ -169,7 +108,6 @@ adminRouter.patch('/users/:uid', async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  // Construir el objeto de actualización solo con los campos presentes
   const updatePayload: Parameters<typeof supabaseAdmin.auth.admin.updateUserById>[1] = {};
 
   if (email) updatePayload.email = email.trim().toLowerCase();
@@ -212,13 +150,6 @@ adminRouter.patch('/users/:uid', async (req: Request, res: Response): Promise<vo
   });
 });
 
-// ── DELETE /api/admin/users/:uid ──────────────────────────────────────────────
-/**
- * Elimina permanentemente un usuario de Supabase Auth.
- * ⚠️  Operación irreversible — el usuario pierde acceso de inmediato.
- *
- * Params: uid → ID del usuario en Supabase Auth
- */
 adminRouter.delete('/users/:uid', async (req: Request, res: Response): Promise<void> => {
   const { uid } = req.params;
   const requestingUser = req.supabaseUser!;
@@ -228,7 +159,6 @@ adminRouter.delete('/users/:uid', async (req: Request, res: Response): Promise<v
     return;
   }
 
-  // Protección: el administrador no puede eliminarse a sí mismo
   if (uid === requestingUser.id) {
     res.status(400).json({
       error: 'No puedes eliminar tu propia cuenta de Administrador desde esta interfaz.',

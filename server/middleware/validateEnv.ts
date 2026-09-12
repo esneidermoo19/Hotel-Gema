@@ -1,8 +1,3 @@
-/**
- * server/middleware/validateEnv.ts
- * Valida que todas las variables de entorno del servidor estén presentes
- * antes de arrancar. Falla rápido con mensajes claros.
- */
 export function validateEnv(): void {
   const required: Record<string, string> = {
     VITE_SUPABASE_URL:
@@ -26,7 +21,6 @@ export function validateEnv(): void {
     process.exit(1);
   }
 
-  // Aviso de seguridad: la service_role key nunca debe tener prefijo VITE_
   if (process.env.VITE_SUPABASE_SERVICE_ROLE_KEY) {
     console.error(
       '\n⚠️  [ADVERTENCIA DE SEGURIDAD] Se detectó VITE_SUPABASE_SERVICE_ROLE_KEY.\n' +

@@ -18,8 +18,8 @@ export const PosScreen: React.FC<PosScreenProps> = ({
   });
 
   const [cart, setCart] = useState<CartItem[]>([
-    { product: products[0], quantity: 1 }, // Desayuno Continental
-    { product: products[1], quantity: 1 }, // Club Sandwich
+    { product: products[0], quantity: 1 },
+    { product: products[1], quantity: 1 },
   ]);
 
   const [notes, setNotes] = useState('Sin cebolla en sándwich, entregar caliente a habitación.');
@@ -86,14 +86,13 @@ export const PosScreen: React.FC<PosScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header & Room Target Selector */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Punto de Venta (POS)</h1>
           <p className="text-xs text-slate-500 mt-0.5">Cargos a habitación, consumos de restaurante, minibar y spa</p>
         </div>
 
-        {/* Room & Guest Selector */}
         <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200">
           <span className="material-symbols-outlined text-blue-600 text-lg">room_service</span>
           <div className="text-xs">
@@ -115,7 +114,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
         </div>
       </div>
 
-      {/* Success Banner */}
       {chargeSuccessMessage && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-2">
@@ -126,11 +124,10 @@ export const PosScreen: React.FC<PosScreenProps> = ({
         </div>
       )}
 
-      {/* Main Grid: Products on Left (2 cols), Order Cart on Right (1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Products Column */}
+
         <div className="lg:col-span-2 space-y-5">
-          {/* Category Tabs */}
+
           <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs overflow-x-auto">
             {categories.map((cat) => (
               <button
@@ -147,7 +144,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             ))}
           </div>
 
-          {/* Product Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {products
               .filter((p) => selectedCategory === 'Restaurante' || p.category === selectedCategory)
@@ -193,7 +189,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
           </div>
         </div>
 
-        {/* Live Order Cart Sidebar */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4 sticky top-24">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
@@ -205,7 +200,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             </span>
           </div>
 
-          {/* Cart Item List */}
           <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto custom-scrollbar">
             {cart.length === 0 ? (
               <div className="py-8 text-center text-slate-400 text-xs">
@@ -219,7 +213,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
                     <p className="text-[10px] text-slate-400 font-data-mono">${item.product.price.toFixed(2)} c/u</p>
                   </div>
 
-                  {/* Quantity modifiers */}
                   <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
                     <button
                       onClick={() => handleUpdateQty(item.product.id, -1)}
@@ -246,7 +239,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             )}
           </div>
 
-          {/* Notes */}
           <div>
             <label className="block text-[11px] font-bold text-slate-600 mb-1">Notas de Servicio</label>
             <input
@@ -258,7 +250,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             />
           </div>
 
-          {/* Calculations */}
           <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal:</span>
@@ -274,7 +265,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             </div>
           </div>
 
-          {/* Action Button */}
           <button
             onClick={handleChargeToRoom}
             disabled={cart.length === 0 || isProcessing}

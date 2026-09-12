@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id="main-sidebar"
       className="w-64 bg-[#1E293B] text-slate-300 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-30 select-none transition-all duration-200"
     >
-      {/* Top Header */}
+
       <div>
         <div className="p-5 flex items-center gap-3 border-b border-slate-700/60">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
@@ -52,9 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Navigation items */}
         <nav className="p-3 space-y-1 mt-2">
-          {/* Executive Section Header for Admin */}
+
           <div className="px-3 flex items-center justify-between mb-2">
             <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
               {isAdmin ? 'Dirección y Gerencia' : 'Módulos Operativos'}
@@ -66,7 +65,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
-          {/* Special Admin Exclusive Tab */}
           <button
             id="nav-item-panel-admin"
             onClick={() => {
@@ -145,9 +143,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Bottom area */}
       <div className="p-3 border-t border-slate-700/60 space-y-2">
-        {/* Quick Role Switcher Button */}
+
         <button
           id="btn-toggle-role"
           onClick={() => {
@@ -179,7 +176,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </span>
         </button>
 
-        {/* Quick jump to Login Screen */}
         <button
           id="btn-quick-login-view"
           onClick={() => onNavigate('login')}
@@ -193,7 +189,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">Acceso</span>
         </button>
 
-        {/* User Card */}
         <div className="flex items-center justify-between p-2 rounded-xl bg-slate-800/60 border border-slate-700/50">
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="relative shrink-0">
@@ -233,4 +228,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
-

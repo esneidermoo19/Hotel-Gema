@@ -27,29 +27,25 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(initialAuditLogs);
   const [promos, setPromos] = useState<PromoCode[]>(initialPromos);
 
-  // Yield management states
   const [surgeActive, setSurgeActive] = useState(true);
   const [weekendSurcharge, setWeekendSurcharge] = useState(true);
   const [lastMinuteDiscount, setLastMinuteDiscount] = useState(false);
-  const [selectedMultiplier, setSelectedMultiplier] = useState<number>(15); // +15%
+  const [selectedMultiplier, setSelectedMultiplier] = useState<number>(15);
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState(15);
   const [showPromoModal, setShowPromoModal] = useState(false);
 
-  // Night audit modal
   const [showNightAuditModal, setShowNightAuditModal] = useState(false);
   const [nightAuditProgress, setNightAuditProgress] = useState(0);
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditSuccess, setAuditSuccess] = useState(false);
 
-  // New employee modal
   const [showNewStaffModal, setShowNewStaffModal] = useState(false);
   const [newStaffName, setNewStaffName] = useState('');
   const [newStaffRole, setNewStaffRole] = useState<Employee['role']>('Recepcionista');
   const [newStaffShift, setNewStaffShift] = useState<Employee['shift']>('Mañana (06:00 - 14:00)');
   const [newStaffPhone, setNewStaffPhone] = useState('');
 
-  // Rate override modal
   const [selectedRoomForRate, setSelectedRoomForRate] = useState<Room | null>(null);
   const [customRateInput, setCustomRateInput] = useState<number>(150);
 
@@ -161,7 +157,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Executive Header */}
+
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 p-6 rounded-3xl text-white shadow-lg border border-slate-700/60">
         <div className="flex items-start gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 shadow-md shadow-amber-500/20 shrink-0">
@@ -205,7 +201,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       </div>
 
-      {/* Financial Advantage Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -272,7 +267,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       </div>
 
-      {/* Sub-Navigation Tabs */}
       <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs overflow-x-auto gap-1">
         <button
           onClick={() => setActiveTab('yield')}
@@ -323,10 +317,9 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: YIELD & TARIFAS DINÁMICAS */}
       {activeTab === 'yield' && (
         <div className="space-y-6">
-          {/* Automation Rules Grid */}
+
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
               <div>
@@ -340,7 +333,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Rule 1 */}
+
               <div className={`p-4 rounded-2xl border transition ${surgeActive ? 'bg-blue-50/50 border-blue-300' : 'bg-slate-50 border-slate-200'}`}>
                 <div className="flex items-start justify-between">
                   <div>
@@ -370,7 +363,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
                 </div>
               </div>
 
-              {/* Rule 2 */}
               <div className={`p-4 rounded-2xl border transition ${weekendSurcharge ? 'bg-purple-50/50 border-purple-300' : 'bg-slate-50 border-slate-200'}`}>
                 <div className="flex items-start justify-between">
                   <div>
@@ -389,7 +381,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
                 </div>
               </div>
 
-              {/* Rule 3 */}
               <div className={`p-4 rounded-2xl border transition ${lastMinuteDiscount ? 'bg-emerald-50/50 border-emerald-300' : 'bg-slate-50 border-slate-200'}`}>
                 <div className="flex items-start justify-between">
                   <div>
@@ -410,7 +401,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
           </div>
 
-          {/* Rooms Base Rates Manager Table */}
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -484,9 +474,8 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
           </div>
 
-          {/* Promo Codes & Channel Margins */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Promo Codes */}
+
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div>
@@ -532,7 +521,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
               </div>
             </div>
 
-            {/* Channel Commissions Management */}
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
               <div className="pb-3 border-b border-slate-100">
                 <h3 className="text-sm font-bold text-slate-900">Estrategia de Canales y Comisiones OTA</h3>
@@ -584,7 +572,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* TAB 2: PERSONAL & TURNOS */}
       {activeTab === 'staff' && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -677,7 +664,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* TAB 3: AUDITORÍA DE SEGURIDAD */}
       {activeTab === 'audit' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -739,10 +725,9 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* TAB 4: P&L FINANCIERO HOTELERO */}
       {activeTab === 'finance' && (
         <div className="space-y-6">
-          {/* Executive P&L Breakdown Card */}
+
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
               <div>
@@ -755,7 +740,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
               </div>
             </div>
 
-            {/* Waterfall Breakdown Rows */}
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                 <div className="flex items-center gap-3">
@@ -827,7 +811,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
                 </div>
               </div>
 
-              {/* Net Result (EBITDA) */}
               <div className="flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-100">Resultado Neto Operativo</span>
@@ -843,7 +826,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* MODAL: NIGHT AUDIT (AUDITORÍA NOCTURNA) */}
       {showNightAuditModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -934,7 +916,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* MODAL: EDIT ROOM RATE */}
       {selectedRoomForRate && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -976,7 +957,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* MODAL: NUEVO CUPÓN */}
       {showPromoModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -1029,7 +1009,6 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
         </div>
       )}
 
-      {/* MODAL: NUEVO EMPLEADO */}
       {showNewStaffModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">

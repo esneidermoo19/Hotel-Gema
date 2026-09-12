@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
       id="main-header"
       className="h-16 bg-white border-b border-[#e0e3e5] px-6 flex items-center justify-between sticky top-0 z-20"
     >
-      {/* Title & context */}
+
       <div className="flex items-center gap-4">
         <div>
           <h2 className="text-base font-bold text-[#191c1e] leading-tight flex items-center gap-2">
@@ -58,7 +58,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Center Search bar */}
       <div className="relative hidden md:flex items-center w-64 lg:w-80">
         <span className="material-symbols-outlined absolute left-3 text-slate-400 text-lg">search</span>
         <input
@@ -78,9 +77,8 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Right Actions */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Role Mode Badge & Switcher Pill */}
+
         <button
           onClick={() => {
             if (isAdmin) {
@@ -111,7 +109,6 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </button>
 
-        {/* Quick Screen Switcher Pill Dropdown */}
         <div className="flex items-center bg-[#f2f4f6] p-1 rounded-xl border border-[#e0e3e5]">
           <select
             value={currentScreen}
@@ -143,7 +140,6 @@ export const Header: React.FC<HeaderProps> = ({
           </select>
         </div>
 
-        {/* New Booking CTA */}
         <button
           id="btn-header-new-booking"
           onClick={onOpenNewBooking}
@@ -153,7 +149,6 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Nueva Reserva</span>
         </button>
 
-        {/* Notifications Popover Toggle */}
         <div className="relative">
           <button
             id="btn-header-notifications"
@@ -195,4 +190,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-

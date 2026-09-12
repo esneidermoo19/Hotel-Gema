@@ -21,18 +21,15 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
   const [selectedRoomCategory, setSelectedRoomCategory] = useState<'Todas' | 'Suite' | 'Doble' | 'Simple'>('Todas');
   const [selectedRoomId, setSelectedRoomId] = useState<string>('214');
 
-  // Step 2 Form
   const [guestName, setGuestName] = useState('Carlos Mendoza');
   const [guestEmail, setGuestEmail] = useState('carlos.mendoza@email.com');
   const [guestPhone, setGuestPhone] = useState('+34 612 345 678');
   const [documentId, setDocumentId] = useState('DNI-ES8729104');
   const [specialRequests, setSpecialRequests] = useState('Llegada estimada a las 15:00. Solicita piso alto y cuna adicional.');
 
-  // Step 3 Payment
   const [paymentMethod, setPaymentMethod] = useState<'Tarjeta' | 'Transferencia' | 'Efectivo'>('Tarjeta');
   const [advancePayment, setAdvancePayment] = useState(true);
 
-  // Available room options matching the design
   const roomCards = [
     {
       id: '214',
@@ -108,7 +105,7 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Top Header & Breadcrumb */}
+
       <div className="flex items-center justify-between">
         <div>
           <button
@@ -121,7 +118,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
           <h1 className="text-xl font-bold text-slate-900">Crear Nueva Reserva</h1>
         </div>
 
-        {/* Step Indicator */}
         <div className="hidden sm:flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -162,14 +158,13 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Wizard Form on Left (2 cols), Sticky Summary on Right (1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Step Content */}
+
         <div className="lg:col-span-2 space-y-6">
-          {/* STEP 1: Dates & Room Selection */}
+
           {step === 1 && (
             <div className="space-y-6">
-              {/* Date & Guests Card */}
+
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <span className="material-symbols-outlined text-blue-600 text-lg">calendar_month</span>
@@ -223,7 +218,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
                 </div>
               </div>
 
-              {/* Room Categories & List */}
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
@@ -245,7 +239,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
                   </div>
                 </div>
 
-                {/* Available Room Cards */}
                 <div className="space-y-3">
                   {roomCards
                     .filter((r) => selectedRoomCategory === 'Todas' || r.category === selectedRoomCategory)
@@ -306,7 +299,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
             </div>
           )}
 
-          {/* STEP 2: Guest Details */}
           {step === 2 && (
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -375,7 +367,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
             </div>
           )}
 
-          {/* STEP 3: Payment & Confirmation */}
           {step === 3 && (
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -424,7 +415,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
             </div>
           )}
 
-          {/* Stepper Navigation Buttons */}
           <div className="flex items-center justify-between pt-2">
             {step > 1 ? (
               <button
@@ -467,7 +457,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Summary Sticky Sidebar (1 col) */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5 sticky top-24">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Resumen de la Reserva</h3>
@@ -476,7 +465,6 @@ export const NuevaReservaWizard: React.FC<NuevaReservaWizardProps> = ({
             </span>
           </div>
 
-          {/* Selected Room Preview */}
           <div>
             <img
               src={selectedRoom.image}

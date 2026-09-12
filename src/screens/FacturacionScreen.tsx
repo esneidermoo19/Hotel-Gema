@@ -22,7 +22,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
   const [showFundModal, setShowFundModal] = useState(false);
   const [newFundInput, setNewFundInput] = useState<string>('500.00');
 
-  // Void modal state
   const [invoiceToVoid, setInvoiceToVoid] = useState<Invoice | null>(null);
   const [voidReason, setVoidReason] = useState('Error de digitación en sistema POS');
 
@@ -51,10 +50,9 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
     }, 1200);
   };
 
-
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Top Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -92,9 +90,8 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Sales */}
+
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ventas Totales</span>
           <div className="my-2">
@@ -108,7 +105,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
           </div>
         </div>
 
-        {/* Cash in Drawer */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Efectivo en Caja</span>
           <div className="my-2">
@@ -122,7 +118,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
           </div>
         </div>
 
-        {/* POS Cards */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Tarjetas POS</span>
           <div className="my-2">
@@ -136,7 +131,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
           </div>
         </div>
 
-        {/* Taxes */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wider">Impuestos IVA (19%)</span>
           <div className="my-2">
@@ -149,9 +143,8 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Invoices Table on Left (2 cols), Breakdown on Right (1 col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Invoices Table */}
+
         <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex items-center justify-between">
             <div>
@@ -216,7 +209,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
                         <span className="material-symbols-outlined text-sm">print</span>
                       </button>
 
-                      {/* Void Button (Admin Superpower) */}
                       {inv.status === 'Emitida' && (
                         <button
                           onClick={() => {
@@ -246,17 +238,15 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Breakdown & Cash Drawer */}
         <div className="space-y-6">
-          {/* Income Breakdown Donut SVG Card */}
+
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Desglose de Ingresos</h3>
 
-            {/* SVG Donut Chart */}
             <div className="flex items-center justify-center py-2 relative">
               <svg width="140" height="140" viewBox="0 0 42 42" className="rotate-[-90deg]">
                 <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
-                {/* Alojamiento 75% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -267,7 +257,7 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
                   strokeDasharray="75 25"
                   strokeDashoffset="0"
                 />
-                {/* Alimentos 18% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -278,7 +268,7 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
                   strokeDasharray="18 82"
                   strokeDashoffset="-75"
                 />
-                {/* Otros 7% */}
+
                 <circle
                   cx="21"
                   cy="21"
@@ -296,7 +286,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
               </div>
             </div>
 
-            {/* Legend */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-slate-600 flex items-center gap-1.5">
@@ -322,7 +311,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
             </div>
           </div>
 
-          {/* Cash Drawer Reconciliation */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fondo de Caja</h3>
@@ -358,7 +346,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
         </div>
       </div>
 
-      {/* Adjust Initial Cash Fund Modal (Admin only) */}
       {showFundModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -410,7 +397,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
         </div>
       )}
 
-      {/* Void Invoice Confirmation Modal (Admin Superpower) */}
       {invoiceToVoid && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
@@ -477,7 +463,6 @@ export const FacturacionScreen: React.FC<FacturacionScreenProps> = ({
         </div>
       )}
 
-      {/* Close Shift Reconciliation Modal */}
       {showCloseShiftModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
